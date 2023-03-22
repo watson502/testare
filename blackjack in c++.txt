@@ -1,0 +1,204 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <cstring>
+
+using namespace std;
+
+const int MAX_CARDS = 52;
+
+// cartile
+struct Card {
+    int value;
+    char suit;
+};
+
+// pachetul
+struct Deck {
+    Card cards[MAX_CARDS];
+    int top_card;
+};
+
+// jucatorul
+struct Player {
+    int score;
+    char name[256];
+    Card hand[MAX_CARDS];
+    int num_cards;
+};
+
+// prototipuri functionale
+void shuffle(Deck &deck);
+Card draw(Deck &deck);
+void init_deck(Deck &deck);
+void print_card(Card card);
+int get_card_value(Card card);
+void deal(Deck &deck, Player &player);
+void print_hand(Player player);
+int get_hand_value(Player player);
+bool hit(Deck &deck, Player &player);
+
+int main() {
+    srand(time(0));
+    
+    // formeaza pachetul si amesteca-l
+    Deck deck;
+    init_deck(deck);
+    shuffle(deck);
+    
+    // creaza jucatorul si impartiti prima mana
+    Player player;
+    player.score = 0;
+    cout << "Numele jucatorului: ";
+    cin >> player.name;
+    deal(deck, player);
+    deal(deck, player);
+    
+    // creaza mana jucatorului
+    cout << player.name << "'s hand: ";
+    print_hand(player);
+    cout << endl;
+    
+    // verifica daca jucatorul are blackjack
+    if (get_hand_value(player) == 21) {
+        cout << "Blackjack! Ai castigat!" << endl;
+        return 0;
+    }
+    
+    // inregistreaza actiunea jucatorului
+    char action;
+    cout << "Tragi sau stai? (h/s) ";
+    cin >> action;
+    
+    // repeta pana jucatorul trage sau o da-n bara
+    while (action == 'h') {
+        if (!hit(deck, player)) {
+            break;
+        }
+        cout << "Mana lui " << player.name<<":";
+        print_hand(player);
+        cout << endl;
+        if (get_hand_value(player) > 21) {
+            break;
+        }
+        cout << "Tragi sau stai? (h/s) ";
+        cin >> action;
+    }
+    
+    // verifica daca jucatorul a dat-o in bara
+    if (get_hand_value(player) > 21) {
+        cout << "{Peste! Ai pierdut." << endl;
+        return 0;
+    }
+    
+    // randul dealerului
+    cout << "Randul dealerului." << endl;
+    
+    // creaza dealerul si imparte-i prima mana
+    Player dealer;
+    dealer.score = 0;
+    strcpy(dealer.name, "Dealer");
+    deal(deck, dealer);
+    deal(deck, dealer);
+    
+    // creaza mana dealerului
+    cout << "Mana dealerului: ";
+    print_hand(dealer);
+	cout << endl;
+    
+    // repeta pana dealerul trage sau o da-n bara
+    while (get_hand_value(dealer) < 17) {
+        if (!hit(deck, dealer)) {
+            break;
+        }
+        cout << "Mana dealerului: ";
+        print_hand(dealer);
+        cout << endl;
+    }
+    
+    // verifica daca dealerul a dat-o in bara
+    if (get_hand_value(dealer) > 21) {
+        cout << "Dealerul este peste! Ai castigat!" << endl;
+        return 0;
+    }
+    
+    // compara mana jucatorului cu cea a dealerului
+    if (get_hand_value(player) > get_hand_value(dealer)) {
+        cout << "Ai castigat!" << endl;
+    } else if (get_hand_value(player) < get_hand_value(dealer)) {
+        cout << "You lose." << endl;
+    } else {
+        cout << "It's a tie." << endl;
+    }
+    
+    return 0;
+}
+
+// amesteca pachetul
+void shuffle(Deck &deck) {
+    for (int i = 0; i < MAX_CARDS; i++) {
+        int j = rand() % MAX_CARDS;
+        Card temp = deck.cards[i];
+        deck.cards[i] = deck.cards[j];
+        deck.cards[j] = temp;
+    }
+}
+
+// trage o carte din varful pachetului
+Card draw(Deck &deck) {
+    return deck.cards[deck.top_card++];
+}
+
+// creeaza pachetul cu toate cele 52 carti
+void init_deck(Deck &deck) {
+    char suits[4] = {'S', 'H', 'D', 'C'};
+    int values[13] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11};
+    deck.top_card = 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 13; j++) {
+            deck.cards[deck.top_card].suit = suits[i];
+            deck.cards[deck.top_card].value = values[j];
+            deck.top_card++;
+        }
+    }
+}
+
+// printeaza o carte
+void print_card(Card card) {
+    cout << card.value << card.suit << " ";
+}
+
+// valoare acartii
+int get_card_value(Card card) {
+    return card.value;
+}
+
+// ofera-i carte playerului
+void deal(Deck &deck, Player &player) {
+    player.hand[player.num_cards++] = draw(deck);
+}
+
+// mana playerului
+void print_hand(Player player) {
+    for (int i = 0; i < player.num_cards; i++) {
+        print_card(player.hand[i]);
+    }
+}
+
+// valoarea cartii playerului
+int get_hand_value(Player player) {
+    int value = 0;
+	for (int i = 0; i < player.num_cards; i++) {
+        value += get_card_value(player.hand[i]);
+    }
+    return value;
+}
+
+// dai carte playerului
+bool hit(Deck &deck, Player &player) {
+    if (deck.top_card < MAX_CARDS) {
+        deal(deck, player);
+        return true;
+    }
+    return false;
+}
