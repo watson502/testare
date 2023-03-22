@@ -1,0 +1,31 @@
+using System;
+
+class Program {
+    static void Main() {
+        Console.Write("Introduceti valoarea lui a: ");
+        double a = double.Parse(Console.ReadLine());
+
+        Console.Write("Introduceti valoarea lui b: ");
+        double b = double.Parse(Console.ReadLine());
+
+        Console.Write("Introduceti valoarea lui c: ");
+        double c = double.Parse(Console.ReadLine());
+
+        double delta = b * b - 4 * a * c;
+
+        if (delta < 0) {
+            Console.WriteLine("Ecuatia nu are solutii reale");
+        }
+        else if (delta == 0) {
+            double x = -b / (2 * a);
+            Console.WriteLine("Ecuatia are o singura solutie: {0}", x);
+        }
+        else {
+            double x1 = (-b + Math.Sqrt(delta)) / (2 * a);
+            double x2 = (-b - Math.Sqrt(delta)) / (2 * a);
+            Console.WriteLine("Ecuatia are doua solutii: {0} si {1}", x1, x2);
+        }
+
+        Console.ReadLine();
+    }
+}

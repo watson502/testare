@@ -1,0 +1,26 @@
+using System;
+
+class Program {
+    static void Main() {
+        Console.Write("Introduceti valoarea lui a: ");
+        double a = double.Parse(Console.ReadLine());
+
+        Console.Write("Introduceti valoarea lui b: ");
+        double b = double.Parse(Console.ReadLine());
+
+        if (a == 0) {
+            if (b == 0) {
+                Console.WriteLine("Ecuatia are o infinitate de solutii");
+            }
+            else {
+                Console.WriteLine("Ecuatia nu are solutii");
+            }
+        }
+        else {
+            double x = -b / a;
+            Console.WriteLine("Solutia ecuatiei {0}x + {1} = 0 este {2}", a, b, x);
+        }
+
+        Console.ReadLine();
+    }
+}
