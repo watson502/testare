@@ -1,0 +1,172 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <random>
+
+// culorile si valorile cartilor
+enum Suit { HEARTS, DIAMONDS, CLUBS, SPADES };
+enum Value { ACE = 1, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING };
+
+// structura cartilor
+struct Card {
+    Suit suit;
+    Value value;
+
+    // afisarea cartii
+    friend std::ostream& operator<<(std::ostream& os, const Card& card) {
+        std::string suit_str;
+        switch (card.suit) {
+            case HEARTS:
+                suit_str = "Inima rosie";
+                break;
+            case DIAMONDS:
+                suit_str = "Romb";
+                break;
+            case CLUBS:
+                suit_str = "Trefla";
+                break;
+            case SPADES:
+                suit_str = "Inima neagra";
+                break;
+        }
+        os << suit_str << " " << card.value;
+        return os;
+    }
+};
+
+// jucatorul
+struct Player {
+    std::vector<Card> hand;
+
+    // afisarea mainii jucatorului
+    void showHand() {
+        std::cout << "Mana jucatorului: ";
+        for (const auto& card : hand) {
+            std::cout << card << ", ";
+        }
+        std::cout << std::endl;
+    }
+
+    // dam jos
+    Card drawCard(int index) {
+        Card card = hand[index];
+        hand.erase(hand.begin() + index);
+        return card;
+    }
+
+    // tragem dupa runda
+    void addCard(const Card& card) {
+        hand.push_back(card);
+    }
+
+    // verificare culoare in mana
+    bool hasColor(const Suit& suit) const {
+        for (const auto& card : hand) {
+            if (card.suit == suit) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // verificare numar in mana
+    bool hasValue(const Value& value) const {
+        for (const auto& card : hand) {
+            if (card.value == value) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+int main() {
+    std::vector<Card> deck;
+    std::vector<Player> players;
+    int num_players = 2; // nr jucatori
+
+    // pachetul
+    for (int i = HEARTS; i <= SPADES; i++) {
+        for (int j = ACE; j <= KING; j++) {
+            deck.push_back(Card{ static_cast<Suit>(i), static_cast<Value>(j) });
+        }
+    }
+
+    // amestecam
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(deck.begin(), deck.end(), g);
+
+    // impartim
+    for (int i = 0; i < num_players; i++) {
+	Player player;
+    for (int j = 0; j < 5; j++) {
+        player.addCard(deck.back());
+        deck.pop_back();
+    }
+    players.push_back(player);
+}
+
+// cartea de jos
+Card reference_card = deck.back();
+deck.pop_back();
+std::cout << "Cartea de jos: " << reference_card << std::endl;
+
+// jucam pana se ramane fara carti din partea unui jucator
+int turn = 0;
+while (true) {
+    Player& current_player = players[turn % num_players];
+    std::cout << "Randul jucatorului: " << turn % num_players + 1 << std::endl;
+
+    // cautam compatibilitate pt cartea de jos
+    bool valid_move = false;
+    for (int i = 0; i < current_player.hand.size(); i++) {
+        if (current_player.hand[i].suit == reference_card.suit || current_player.hand[i].value == reference_card.value) {
+            valid_move = true;
+            break;
+        }
+    }
+
+    if (valid_move) {
+        current_player.showHand();
+
+        // cererea de a da jos o carte valida
+        int card_index;
+        do {
+            std::cout << "dati o carte jos: ";
+            std::cin >> card_index;
+        } while (card_index < 0 || card_index >= current_player.hand.size() || (current_player.hand[card_index].suit != reference_card.suit && current_player.hand[card_index].value != reference_card.value));
+
+        // cartea trasa:
+        reference_card = current_player.drawCard(card_index);
+        std::cout << "cartea jucatorului: " << reference_card << std::endl;
+
+        // verificare castig
+        if (current_player.hand.empty()) {
+            std::cout << "Jucataorul " << turn % num_players + 1 << " a castigat" << std::endl;
+            break;
+        }
+
+        // se strica macao
+        if (current_player.hand.size() == 1) {
+            std::cout << "Jucatorul " << turn % num_players + 1 << " MACAO" << std::endl;
+        }
+    }
+    else {
+        // trage carte daca nu ai sa dai
+        if (deck.empty()) {
+            std::cout << "Nu mai sunt carti in pachet" << std::endl;
+            break;
+        }
+
+        Card drawn_card = deck.back();
+        deck.pop_back();
+        current_player.addCard(drawn_card);
+        std::cout << "Player " << turn % num_players + 1 << " draws a card" << std::endl;
+    }
+
+    turn++;
+}
+
+return 0;
+}
