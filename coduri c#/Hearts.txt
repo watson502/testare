@@ -1,0 +1,207 @@
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Definim cartile de joc
+        string[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+        string[] suits = {"C", "D", "H", "S"};
+
+        // Initializam pachetul de carti
+        List<string> deck = new List<string>();
+        foreach (string suit in suits)
+        {
+            foreach (string rank in ranks)
+            {
+                deck.Add(rank + suit);
+            }
+        }
+
+        // Amestecam cartile
+        Random rand = new Random();
+        for (int i = 0; i < deck.Count; i++)
+        {
+            int j = rand.Next(deck.Count);
+            string temp = deck[i];
+            deck[i] = deck[j];
+            deck[j] = temp;
+        }
+
+        // Impartim cartile
+        List<string>[] hands = new List<string>[4];
+        for (int i = 0; i < hands.Length; i++)
+        {
+            hands[i] = new List<string>();
+        }
+
+        for (int i = 0; i < 13; i++)
+        {
+            for (int j = 0; j < hands.Length; j++)
+            {
+                hands[j].Add(deck[0]);
+                deck.RemoveAt(0);
+            }
+        }
+
+        // Jocul
+        int[] scores = new int[4];
+        int turn = 0;
+        string suitLed = "";
+        string[] cardsPlayed = new string[4];
+
+        while (scores[turn] < 100)
+        {
+            // Afisam cartile fiecarui jucator
+            for (int i = 0; i < hands.Length; i++)
+            {
+                Console.WriteLine("Jucatorul " + (i+1) + ": " + String.Join(", ", hands[i].ToArray()));
+            }
+
+            // Jucatorul alege o carte
+            Console.WriteLine("Jucatorul " + (turn+1) + ", alege o carte: ");
+            string cardPlayed = Console.ReadLine();
+
+            // Validam cartea jucata
+            while (!IsValidCard(hands[turn], cardPlayed, suitLed))
+            {
+                Console.WriteLine("Cartea aleasa nu este valida, alege alta: ");
+                cardPlayed = Console.ReadLine();
+            }
+
+            // Adaugam cartea la cartile jucate si o eliminam din mana jucatorului
+            cardsPlayed[turn] = cardPlayed;
+            hands[turn].Remove(cardPlayed);
+
+            // Verificam daca a fost schimbat suit-ul pentru runda urmatoare
+            if (suitLed == "")
+            {
+                suitLed = cardPlayed.Substring(cardPlayed.Length - 1, 1);
+            }
+
+            // Trecem la urmatorul jucator
+            turn = (turn + 1) % 4;
+
+            // Daca toate cele 4 carti au fost jucate, calculam punctele si resetam runda
+            if (turn == 0)
+            {
+                int roundScore = CalculateRoundScore(cardsPlayed);
+                scores[Array.IndexOf(hands, Array.Find(hands, h => h.Contains(cardsPlayed[roundScore])))] += roundScore;
+                suitLed = "";
+				Console.WriteLine();
+    }
+
+    // Afisam scorurile finale
+    for (int i = 0; i < scores.Length; i++)
+    {
+        Console.WriteLine("Jucatorul " + (i+1) + " a acumulat " + scores[i] + " puncte.");
+    }
+
+    Console.ReadLine();
+}
+
+static bool IsValidCard(List<string> hand, string card, string suitLed)
+{
+    // Verificam daca cartea exista in mana jucatorului
+    if (!hand.Contains(card))
+    {
+        return false;
+    }
+
+    // Verificam daca cartea respecta suit-ul cerut pentru runda curenta
+    if (suitLed != "" && card.Substring(card.Length - 1, 1) != suitLed && hand.Exists(c => c.EndsWith(suitLed)))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+static int CalculateRoundScore(string[] cardsPlayed)
+{
+    // Calculam castigatorul rundei
+    int winner = 0;
+    string suitLed = cardsPlayed[0].Substring(cardsPlayed[0].Length - 1, 1);
+    for (int i = 1; i < cardsPlayed.Length; i++)
+    {
+        if (cardsPlayed[i].Substring(cardsPlayed[i].Length - 1, 1) == suitLed && CompareCards(cardsPlayed[i], cardsPlayed[winner]) > 0)
+        {
+            winner = i;
+        }
+    }
+
+    // Calculam punctele
+    int roundScore = 0;
+    foreach (string card in cardsPlayed)
+    {
+        roundScore += GetCardValue(card);
+    }
+    roundScore -= GetCardValue(cardsPlayed[winner]);
+
+    return winner;
+}
+
+static int GetCardValue(string card)
+{
+    // Returnam valoarea cartii in puncte
+    string rank = card.Substring(0, card.Length - 1);
+    switch (rank)
+    {
+        case "A":
+            return 4;
+        case "K":
+            return 3;
+        case "Q":
+            return 2;
+        case "J":
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+static int CompareCards(string card1, string card2)
+{
+    // Comparam doua carti
+    string rank1 = card1.Substring(0, card1.Length - 1);
+    string rank2 = card2.Substring(0, card2.Length - 1);
+    if (rank1 == "A")
+    {
+        return 1;
+    }
+    else if (rank2 == "A")
+    {
+        return -1;
+    }
+    else if (rank1 == "K" && rank2 != "A")
+    {
+        return 1;
+    }
+    else if (rank2 == "K" && rank1 != "A")
+    {
+        return -1;
+    }
+    else if (rank1 == "Q" && (rank2 != "A" && rank2 != "K"))
+    {
+        return 1;
+    }
+    else if (rank2 == "Q" && (rank1 != "A" && rank1 != "K"))
+    {
+        return -1;
+    }
+    else if (rank1 == "J" && (rank2 != "A" && rank2 != "K" && rank2 != "Q"))
+    {
+        return 1;
+    }
+    else if (rank2 == "J" && (rank1 != "A" && rank1 != "K" && rank1 != "Q"))
+	{
+	return -1;
+	}
+	else
+	{
+	return 0;
+	}
+	}
+	}
+	}
