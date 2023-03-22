@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Evoting System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="form">
+        <form action="main.html">
+        <fieldset>
+            <legend><h1>Sistem de votare</h1></legend>
+
+            <label>Nume:</label>&nbsp &nbsp
+            <input type="text" name="nume" placeholder="Introduceti numele" required><br><br>
+
+            <label>Numele tatalui:</label>&nbsp &nbsp
+            <input type="text" name="Numele tatalui" placeholder="Introduceti numele tatalui" required><br><br>
+            
+            <label>Data nasterii:</label>&nbsp &nbsp
+            <input type="data" name="data" placeholder="Data nasterii" required><br><br>
+
+            <label>Sexul:</label>&nbsp &nbsp
+            <input type="radio" name="sexul" class="g"value="male">Masculin
+            <input type="radio" name="sexul" class="g"value="female">Feminin
+            <br><br>
+
+            <label>Cod Numeric Personal:</label>&nbsp &nbsp
+            <input type="number" name="CNP" placeholder="Introduceti CNP-ul"maxlength="12"><br><br>
+
+            <label>Partide:</label>&nbsp &nbsp
+                <select name="Political">
+                    <option value="Null"> Alegeti partidul</option>
+                        <option value="PTI">PSD</option>
+                        <option value="PTI">PNL</option>
+                        <option value="PTI">USR</option>
+                        <option value="PTI">AUR</option>
+						<option value="PTI">UDMR</option>
+						<option value="PTI">PMP</option>
+						<option value="PTI">PRO</option>
+                </select><br>
+        </fieldset>
+        <input type="submit" name="submit" value="submit">
+    </div>
+</body>
+</html>
